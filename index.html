@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>title</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="title-screen">
+    <center>
+      <img id="logo" src="logo.jpg">
+      <h1 id="title">Dragon Slayer</h1>
+      <button id="start" onclick="pickStarter();">Start</button>
+    </center>
+  </div>
+
+  <div id="displays">
+    <p class="display" id="line1"></p>
+    <p class="display" id="line2"></p>
+    <p class="display" id="line3"></p>
+    <p class="display" id="turns"></p>
+  </div>
+
+  <div id="main-buttons" class="game">
+    <button id="continue" onclick="cont();">Continue</button>
+  </div>
+
+  <div id="starter-selection" class="game">
+    <div id="select-sword" class="starter" onclick="starter('sword');">
+      <center>
+        <img src="weapons/sword.png">
+        <h1>Sword</h1>
+        <p>Classic, sharp sword that does 30 physical damage per hit with no additional stack damage. It does not
+          require any mana to use.</p>
+      </center>
+    </div>
+    <div id="select-spell" class="starter" onclick="starter('spark');">
+      <center>
+        <img src="spells/spark.png">
+        <h1>Spark Spell</h1>
+        <p>Scroll of a simple spell that does 25 electric damage and does 15 additional stack damage with a decline of 7
+          per turn. The spell has a chance to deal extra damage and costs 7 mana to use.</p>
+      </center>
+    </div>
+    <div id="select-ring" class="starter" onclick="starter('magic ring');">
+      <center>
+        <img src="weapons/magic ring.png">
+        <h1>Magic Ring</h1>
+        <p>Ancient magic ring that deals 10 damage per hit with 5 extra stack damage that has a decline of 3 per turn.
+          The magic ring provides 5 extra max mana per level up.</p>
+      </center>
+    </div>
+  </div>
+
+  <div id="loot-screen" class="game">
+    <button id="loot" onclick="loot();">Loot</button>
+  </div>
+
+  <div id="pickUpQuery" class="game">
+    <button id="yesPickUp" onclick="pickUp(true);">Yes</button>
+    <button id="noPickUp" onclick="pickUp(false);">No</button>
+  </div>
+
+  <div id="bot-bar" class="game">
+    <div id="inventory" class="bot-bar">
+      <div id="item1" class="inv"></div>
+      <div id="item2" class="inv"></div>
+      <div id="item3" class="inv"></div>
+      <div id="item4" class="inv"></div>
+      <div id="item5" class="inv"></div>
+      <div id="item6" class="inv"></div>
+    </div>
+    <div id="center" class="bot-bar">
+      <div id="healthFrame" class="bar">
+        <div id="healthFill"></div>
+      </div>
+      <div id="manaFrame" class="bar">
+        <div id="manaFill"></div>
+      </div>
+    </div>
+    <div id="stats" class="bot-bar"></div>
+  </div>
+
+  <script src="program.js"></script>
+
+</body>
+
+</html>
