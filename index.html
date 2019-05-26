@@ -62,14 +62,26 @@
     <button id="noPickUp" onclick="pickUp(false);">No</button>
   </div>
 
+  <div id="tooltip-display">
+    <center>
+      <p id="tooltip"></p>
+    </center>
+  </div>
+
   <div id="bot-bar" class="game">
     <div id="inventory" class="bot-bar">
-      <div id="item1" class="inv"></div>
-      <div id="item2" class="inv"></div>
-      <div id="item3" class="inv"></div>
-      <div id="item4" class="inv"></div>
-      <div id="item5" class="inv"></div>
-      <div id="item6" class="inv"></div>
+      <div id="item1" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
+      <div id="item2" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
+      <div id="item3" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
+      <div id="item4" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
+      <div id="item5" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
+      <div id="item6" class="inv" onmouseover="mouseStatus(true, this.id)" onmouseout="mouseStatus(false, this.id)">
+      </div>
     </div>
     <div id="center" class="bot-bar">
       <div id="healthFrame" class="bar">

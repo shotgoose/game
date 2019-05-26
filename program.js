@@ -1,5 +1,6 @@
 var turns;
 var drop;
+var mouse = false;
 var player = {};
 var enemy = {};
 var damage = {
@@ -41,21 +42,21 @@ var item6 = {};
 
 //WORD TYPES: electric, fire, water, wind, cold, rangedphysical, sharp, dull
 
-//weapons: [name], [damage type], [damage amount], [stack damage type], [stack damage amount], [stack damage decline per turn], [cooldown in turns], [word type]
+//weapons: [name], [damage type], [damage amount], [stack damage type], [stack damage amount], [stack damage decline per turn], [cooldown in turns], [word type], [tooltip]
 const weapons = [
-    "sword", "physical", 30, null, 0, 0, 0, "sharp",
-    "ancient sword", "physical", 60, null, 0, 0, 1, "sharp",
-    "bat", "physical", 22, null, 0, 0, 0, "dull",
-    "club", "physical", 27, null, 0, 0, 0, "dull",
-    "dagger", "physical", 30, "bleed", 10, 1, 1, "sharp",
-    "flail", "physical", 37, null, 0, 0, 0, "dull",
-    "hell axe", "physical", 34, "fire", 10, 2, 1, "sharp",
-    "bow", "physical", 29, null, 0, 0, 0, "rangedphysical",
-    "magic ring", "light", 17, "light", 11, 3, 0, "dull",
+    "sword", "physical", 30, null, 0, 0, 0, "sharp", "Deals 30 physical damage.",
+    "ancient sword", "physical", 60, null, 0, 0, 1, "sharp", "Deals 60 physical damage. Has a 1 turn cooldown.",
+    "bat", "physical", 22, null, 0, 0, 0, "dull", "Deals 22 physical damage.",
+    "club", "physical", 27, null, 0, 0, 0, "dull", "Deals 27 physical damage.",
+    "dagger", "physical", 30, "bleed", 10, 1, 1, "sharp", "Deals 30 physical damage with an additional 10 stack damage that has a decline of 1 per turn.",
+    "flail", "physical", 37, null, 0, 0, 0, "dull", "Deals 37 physical damage.",
+    "hell axe", "physical", 34, "fire", 19, 2, 1, "sharp", "Deals 34 physical damage with an additional 19 stack damage that has a decline of 2 per turn. Has a 1 turn cooldown.",
+    "bow", "physical", 40, null, 0, 0, 1, "rangedphysical", "Deals 40 ranged physical damage with a 1 turn cooldown.",
+    "magic ring", "light", 17, "light", 11, 3, 0, "dull", "Deals 17 light damage with an additional 11 stack damage that declines by 3 per turn.",
 ];
 
-//damage spells: [name], [passive spell - FALSE], [damage type], [damage amount], [stack damage], [stack damage decline per turn], [cooldown in turns], [effect], [effect stat], [effect chance], [effect length], [spell mana cost], [word type]
-//passive spells: [name], [passive spell - TRUE], [spell type], [0 damage], [damage resist], [damage resist decline per turn], [cooldown in turns], [effect], [effect stat], [effect chance], [effect length], [spell mana cost],
+//damage spells: [name], [passive spell - FALSE], [damage type], [damage amount], [stack damage], [stack damage decline per turn], [cooldown in turns], [effect], [effect stat], [effect chance], [effect length], [spell mana cost], [word type], [tooltip]
+//passive spells: [name], [passive spell - TRUE], [spell type], [0 damage], [damage resist], [damage resist decline per turn], [cooldown in turns], [effect], [effect stat], [effect chance], [effect length], [spell mana cost], [null], [tooltip]
 //effects:
 //stun - enemy can't attack for [effect length] number of turns
 //heal - player is healed for [effect stat] health
@@ -67,38 +68,38 @@ const weapons = [
 
 //refresh ("refresh" ability specific) - all your cooldowns are reset
 const spells = [
-    "ice needles", false, "ice", 27, 5, 4, 1, "freeze", .32, .5, 2, 8, "cold",
-    "glacial blast", false, "ice", 43, 7, 3, 2, "stun", 0, .6, 2, 15, "cold",
-    "fireball", false, "fire", 34, 10, 3, 3, null, 0, 0, 0, 9, "fire",
-    "sunlight fury", false, "fire", 29, 20, 4, 4, "flame", .14, .34, 3, 18, "fire",
-    "boil", false, "water", 23, 12, 3, 3, null, 0, 0, 0, 7, "fire",
-    "bolt", false, "electric", 31, 6, 1, 2, null, 0, .10, 2, 7, "electric",
-    "tidal wave", false, "water", 45, 2, 1, 3, "freeze", .25, .15, 1, 20, "water",
-    "splash", false, "water", 10, 4, 0, 1, "stun", 0, .10, 1, 3, "water",
-    "water shield", true, "water", 0, 10, 4, 3, "heal", 14, .76, 1, 11, null,
-    "quake stomp", false, "physical", 45, 10, 1, 4, "stun", 0, .4, 2, 20, "dull",
-    "tornado", false, "air", 30, 10, 3, 2, null, 0, 0, 0, 12, "wind",
-    "thunder beam", false, "electric", 30, 2, 1, 1, "shock", .14, .4, 3, 11, "electric",
-    "electric sprint", true, "electric", 0, 15, 1, 3, null, 0, 0, 0, 4, null,
-    "refresh", true, "electric", 0, 0, 0, 5, "refresh", 0, 1, 0, 20, null,
-    "sonic shout", false, "air", 23, 15, 4, 5, "stun", 0, .4, 1, 14, "wind",
-    "blind", false, "air", 0, 0, 0, 4, "blind", .33, 1, 0, 13, null,
-    "spark", false, "electric", 25, 15, 7, 0, "shock", .12, .6, 0, 7, "electric",
+    "ice needles", false, "ice", 27, 5, 4, 1, "freeze", .32, .5, 0, 8, "cold", "Deals 27 ice damage with 5 additional stack damage that declines by 4 per turn. Has a 50% precent chance to deal 32% more damage. It has a 1 turn cooldown and takes 8 mana to use.",
+    "glacial blast", false, "ice", 43, 7, 3, 6, "stun", 0, .6, 2, 15, "cold", "Deals 43 ice damage with 7 additional stack damage that declines by 3 per turn. Has a 60% precent chance to stun the enemy for 2 turns. It has a 6 turn cooldown and takes 15 mana to use.",
+    "fireball", false, "fire", 34, 10, 3, 3, null, 0, 0, 0, 9, "fire", "Deals 34 ice damage with 10 stack damage that declines by 3 per turn. Has a 3 turn cooldown and costs 9 mana to use.",
+    "sunlight fury", false, "fire", 29, 20, 4, 4, "flame", .14, .34, 0, 18, "fire", "Deals 29 fire damage and inflicts 20 stack damage that declines by 4 per turn. The spell has a 34% chance to deal 14% more damage. It has a 4 turn cooldown and needs 18 mana.",
+    "boil", false, "water", 23, 12, 3, 3, null, 0, 0, 0, 7, "fire", "You launch boiling water at your opponent, dealing 23 water damage and 12 stack damage that declines by 3 per turn. Has a 3 turn cooldown and uses 7 mana.",
+    "bolt", false, "electric", 31, 6, 1, 2, null, 0, 0, 0, 7, "electric", "Deals 31 electric damage with 6 stack damage that declines by 1 per turn. Has a cooldown of 2 turns and needs 7 mana",
+    "tidal wave", false, "water", 45, 2, 1, 3, "freeze", .25, .15, 0, 20, "water", "You unleash a wave of water onto your opponentm dealing 45 water damage and 2 stack damage that declines by 1 per turn. Has a 15% chance to deal 25% more damage and has a 3 turn cooldown, needing 20 mana.",
+    "splash", false, "water", 10, 4, 0, 1, "stun", 0, .10, 1, 7, "water", "", "You splash water onto your opponent, dealing 10 water damage and 4 physical damage that doesn't decline until another spell is used. Has a %10 chance to stun the enemy for 1 turn. It takes 7 mana to use and has a 3 turn cooldown.",
+    "water shield", true, "water", 0, 10, 4, 3, "heal", 14, .76, 0, 11, null, "You shield yourself by manipulating water. You get 10 damage resistance that declines by 4 per turn. You have a 76% chance to heal yourself for 14 health. Has a 3 turn cooldown and takes 11 mana.",
+    "quake stomp", false, "physical", 45, 10, 1, 4, "stun", 0, .4, 2, 20, "dull", "The user stomps the ground, dealing 45 physical damage and 10 stack damage with a decline of 1 per turn. Has a 40% chance to stun the enemy for 2 turns. Has a 4 turn cooldown and needs 20 mana.",
+    "tornado", false, "air", 30, 10, 3, 2, null, 0, 0, 0, 12, "wind", "Deals 30 air damage and does 10 extra stack damage that declines by 3 per turn. Has a 2 turn cooldown and uses 12 mana.",
+    "thunder beam", false, "electric", 30, 2, 1, 1, "shock", .14, .4, 0, 11, "electric", "Deals 30 electric damage and 2 stack damage that declines by 1 per turn. Has a 40% chance to do 14% more damage and takes 3 mana to use.",
+    "electric sprint", true, "electric", 0, 15, 4, 3, null, 0, 0, 0, 4, null, "The user charges themselves with pure electricity and takes 15 less damage per hit. The damage resist fades by 4 per turn. It has a 3 turn cooldown and takes 4 mana to use.",
+    "refresh", true, "electric", 0, 0, 0, 5, "refresh", 0, 1, 0, 20, null, "Resets the cooldowns of all of your weapons and spells. Has a 5 turn cooldown and costs 20 mana.",
+    "sonic shout", false, "air", 23, 15, 4, 5, "stun", 0, .4, 1, 14, "wind", "Deals 23 air damage and 15 stack damage with a decline of 4 per turn. Has a 40% chance to stun the enemy for 1 turn. It has a 5 turn cooldown and costs 14 mana to use.",
+    "blind", false, "air", 0, 0, 0, 4, "blind", .33, 1, 0, 13, null, "Makes the enemy 33% more likely to miss their attacks. Has a 4 turn cooldown and takes 13 mana to use.",
+    "spark", false, "electric", 25, 15, 7, 0, "shock", .12, .6, 0, 7, "electric", "Deals 25 electric damage and 15 stack damage that declines by 7 per turn. Has a 60% chance to deal 12% extra damage and takes 7 mana to use.",
 ];
 
-//statBuffs: [item that provides it], [stat it increases], [by how much extra per level]
+//statBuffs: [item that provides it], [stat it increases], [by how much extra per level], [tooltip]
 const statBuffs = [
-    "magic ring", "maxmana", 5,
-    "strength band", "strength", 2,
-    "spell book", "intellect", 4,
-    "necklace of luck", "bonusdamage", .05,
-    "manaflow band", "manaregen", 1,
-    "silk band", "maxhealth", 5,
+    "magic ring", "maxmana", 5, "Gain 5 extra max mana per level up",
+    "strength band", "strength", 2, "Gain 2 extra strength per level up.",
+    "spell book", "intellect", 4, "Gain 4 extra intellect per level up.",
+    "necklace of luck", "bonusdamage", .05, "Gain 5% bonus damage per level up.",
+    "manaflow band", "manaregen", 1, "Gain 1 extra mana regen per level up.",
+    "silk band", "maxhealth", 5, "Gain 5 extra max health per level up.",
 ]
 
-//consumables: [name], [hp heal], [max hp increase], [strength increase], [incoming damage decrease], [regen increase], [intellect increase], [mana recover], [max mana increase], [speed increase]
+//consumables: [name], [hp heal], [max hp increase], [strength increase], [incoming damage decrease], [regen increase], [intellect increase], [mana recover], [max mana increase], [speed increase], [tooltip]
 const consumables = [
-    "potion", 50, 0, 0, 0, 0, 0, 0, 0, 0
+    "potion", 50, 0, 0, 0, 0, 0, 0, 0, 0, "Recovers 50 HP."
 ];
 
 //enemies
@@ -333,6 +334,57 @@ function spell(spellObject, spellName) {
         if (effect == "blind") {
             enemy.missChance = enemy.missChance + effectStat;
         }
+    }
+
+    //turns
+    if (player.speed >= enemy.speed) {
+        damageApply(true, spellName, spells[spellID + 12], spellObject);
+        enemyAttack(false);
+    }
+    else {
+        enemyAttack(true);
+        damageApply(false, spellName, spells[spellID + 12], spellObject);
+    }
+    damage[type] = 0;
+
+}
+
+function passiveSpell(spellObject, spellName) {
+    var spellID = spells.indexOf(spellName);
+    var type = spells[spellID + 2];
+    var dmgResist = spells[spellID + 4];
+    var dmgResistDecline = spells[spellID + 5];
+    var cooldown = spells[spellID + 6];
+    var effect = spells[spellID + 7];
+    var effectStat = spells[spellID + 8]
+    var effectChance = spells[spellID + 9];
+    var effectLength = spells[spellID + 10];
+    var manaCost = spells[spellID + 11];
+
+    if (manaCost > player.mana) {
+        //not enough mana
+        update("clear", 1);
+        update("clear", 2);
+        update("You don't have enough mana for the " + spellName + " spell.", 1);
+        return;
+    }
+    if (spellObject.cooldown != 0) {
+        //cooldown not over
+        update("clear", 1);
+        update("clear", 2);
+        update("The " + spellName + " spell is still on cooldown.", 1);
+        return;
+    }
+
+    if (player.tempResist > 0) {
+        player.tempResist = player.tempResist - dmgResistDecline;
+        if (player.tempResist < 0) { player.tempResist = 0 };
+    }
+    else {
+        player.tempResist = player.tempResist + dmgResist;
+    }
+
+    if (Math.random() <= effectChance) {
         if (effect == "refresh") {
             var i = 1;
             while (i <= 6) {
@@ -341,19 +393,14 @@ function spell(spellObject, spellName) {
                 i = i + 1;
             }
         }
+        if (effect == "heal") {
+            player.health = player.health + effectStat;
+        }
     }
 
-    //turns
-    if (player.speed >= enemy.speed) {
-        damageApply(true, spellName, spells[spellID + 12]);
-        enemyAttack(false);
-    }
-    else {
-        enemyAttack(true);
-        damageApply(false, spellName, spells[spellID + 12]);
-    }
-    damage[type] = 0;
-
+    reduceCooldowns();
+    spellObject.cooldown = cooldown;
+    player.mana = player.mana - manaCost
 }
 
 function weaponAttack(weaponObject, weaponName) {
@@ -390,17 +437,17 @@ function weaponAttack(weaponObject, weaponName) {
 
     //turns
     if (player.speed >= enemy.speed) {
-        damageApply(true, weaponName, weapons[weaponID + 7]);
+        damageApply(true, weaponName, weapons[weaponID + 7], weaponObject);
         enemyAttack(false);
     }
     else {
         enemyAttack(true);
-        damageApply(false, weaponName, weapons[weaponID + 7]);
+        damageApply(false, weaponName, weapons[weaponID + 7], weaponObject);
     }
     damage[type] = 0;
 }
 
-function damageApply(attackPriority, weaponName, messageType) {
+function damageApply(attackPriority, weaponName, messageType, weaponObject) {
     const sumValues = obj => Object.values(obj).reduce((a, b) => a + b);
 
     //start damage counting
@@ -416,11 +463,11 @@ function damageApply(attackPriority, weaponName, messageType) {
     //messages
     if (attackPriority == true) {
         update("clear", 1);
-        update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponName + ", dealing " + total + " damage.", 1);
+        update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponObject.displayName + ", dealing " + total + " damage.", 1);
     }
     else {
         update("clear", 2);
-        update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponName + ", dealing " + total + " damage.", 2);
+        update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponObject.displayName + ", dealing " + total + " damage.", 2);
     }
 
     //reduce stack damage
@@ -485,10 +532,12 @@ function enemyAttack(attackPriority) {
             if (player.speed >= enemy.speed) {
                 update("clear", 2);
                 update("The " + enemy.name + " is stunned.", 2);
+                enemy.stun = enemy.stun - 1;
             }
             else {
                 update("clear", 1);
                 update("The " + enemy.name + " is stunned.", 1);
+                enemy.stun = enemy.stun - 1;
             }
         }
     }
@@ -691,7 +740,12 @@ function printInv() {
             img.style.opacity = "0.5";
             var cooldownDisplay = document.createElement("h1");
             cooldownDisplay.innerText = item.cooldown
-            img.appendChild(cooldownDisplay);
+            cooldownDisplay.style.position = "absolute";
+            cooldownDisplay.style.zIndex = "1";
+            cooldownDisplay.style.color = "white";
+            cooldownDisplay.style.marginLeft = "2%";
+            img.style.zIndex = "-1";
+            slot.appendChild(cooldownDisplay);
         }
 
         if (weapons.indexOf(item.name) >= 0) {
@@ -759,6 +813,33 @@ function organizeInv() {
         iterations = iterations + 1;
         i = 1;
     }
+}
+
+function mouseStatus(x, id) {
+    mouse = x;
+    if (mouse == true) {
+        showToolTip(id)
+    }
+    else {
+        document.getElementById("tooltip").innerHTML = "";
+    }
+}
+
+function showToolTip(id) {
+    var item = window[id];
+    if (weapons.indexOf(item.name) >= 0) {
+        var tooltip = weapons[weapons.indexOf(item.name) + 8];
+    }
+    else if (spells.indexOf(item.name) >= 0) {
+        var tooltip = spells[spells.indexOf(item.name) + 13];
+    }
+    else if (consumables.indexOf(item.name) >= 0) {
+        var tooltip = consumables[consumables.indexOf(item.name) + 10];
+    }
+    else if (statBuffs.indexOf(item.name) >= 0) {
+        var tooltip = statBuffs[statBuffs.indexOf(item.name) + 3];
+    }
+    document.getElementById("tooltip").innerHTML = tooltip;
 }
 
 function die() {

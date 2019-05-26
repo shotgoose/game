@@ -110,3 +110,13 @@ button:focus {
     margin-right: 10px;
     margin-left: 10px;
 }
+
+#tooltip {
+    width: 300px;
+    height: 100px;
+}
+
+#tooltip-display {
+    position: absolute;
+    bottom: 100px;
+}
