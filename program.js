@@ -148,6 +148,7 @@ function start() {
     player.manaregen = 3;
     player.bonusdamage = 0; //%
     player.speed = 30;
+    player.tempResist = 0;
 
     player.level = 1;
     player.xpToNext = 200;
@@ -494,6 +495,8 @@ function enemyAttack(attackPriority) {
 
                 //turns = turns + 1;
                 var damageTaken = enemy.damage - player.dmgresist;
+                damageTaken = damageTaken - player.tempResist;
+                if (damageTaken < 0) { damageTaken = 0 };
                 player.health = player.health - damageTaken;
 
                 if (attackPriority == true) {
