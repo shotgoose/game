@@ -1,6 +1,7 @@
 var turns;
 var drop;
 var mouse = false;
+var replacingItem;
 var player = {};
 var enemy = {};
 var damage = {
@@ -43,16 +44,19 @@ var item6 = {};
 //WORD TYPES: electric, fire, water, wind, cold, rangedphysical, sharp, dull
 
 //weapons: [name], [damage type], [damage amount], [stack damage type], [stack damage amount], [stack damage decline per turn], [cooldown in turns], [word type], [tooltip]
+//Unique Damage Type Effects:
+//Bleed: bleed damage stacks multiple times without having to come back to 0
+//Ice: ice damage reduces enemy damage based on how much damage it did
 const weapons = [
     "sword", "physical", 30, null, 0, 0, 0, "sharp", "Deals 30 physical damage.",
     "ancient sword", "physical", 60, null, 0, 0, 1, "sharp", "Deals 60 physical damage. Has a 1 turn cooldown.",
     "bat", "physical", 22, null, 0, 0, 0, "dull", "Deals 22 physical damage.",
     "club", "physical", 27, null, 0, 0, 0, "dull", "Deals 27 physical damage.",
-    "dagger", "physical", 30, "bleed", 10, 1, 1, "sharp", "Deals 30 physical damage with an additional 10 stack damage that has a decline of 1 per turn.",
+    "dagger", "physical", 30, "bleed", 10, 1, 1, "sharp", "Deals 30 physical damage with an additional 10 bleed stack damage that has a decline of 1 per turn. Bleed stack damage stacks every turn.",
     "flail", "physical", 37, null, 0, 0, 0, "dull", "Deals 37 physical damage.",
     "hell axe", "physical", 34, "fire", 19, 2, 1, "sharp", "Deals 34 physical damage with an additional 19 stack damage that has a decline of 2 per turn. Has a 1 turn cooldown.",
-    "bow", "physical", 40, null, 0, 0, 1, "rangedphysical", "Deals 40 ranged physical damage with a 1 turn cooldown.",
-    "magic ring", "light", 17, "light", 11, 3, 0, "dull", "Deals 17 light damage with an additional 11 stack damage that declines by 3 per turn.",
+    "bow", "physical", 40, null, 0, 0, 2, "rangedphysical", "Deals 40 ranged physical damage with a 2 turn cooldown.",
+    "magic ring", "light", 17, "physical", 11, 3, 0, "dull", "Deals 17 physical damage with an additional 11 stack damage that declines by 3 per turn.",
 ];
 
 //damage spells: [name], [passive spell - FALSE], [damage type], [damage amount], [stack damage], [stack damage decline per turn], [cooldown in turns], [effect], [effect stat], [effect chance], [effect length], [spell mana cost], [word type], [tooltip]
@@ -67,12 +71,16 @@ const weapons = [
 //manastacks - [effect chance]% chance to get [effect stat] more max mana when hitting an enemy
 
 //refresh ("refresh" ability specific) - all your cooldowns are reset
+
+//Unique Damage Type Effects:
+//Bleed: bleed damage stacks multiple times without having to come back to 0
+//Ice: ice damage reduces enemy damage based on how much damage it did
 const spells = [
     "ice needles", false, "ice", 27, 5, 4, 1, "freeze", .32, .5, 0, 8, "cold", "Deals 27 ice damage with 5 additional stack damage that declines by 4 per turn. Has a 50% precent chance to deal 32% more damage. It has a 1 turn cooldown and takes 8 mana to use.",
     "glacial blast", false, "ice", 43, 7, 3, 6, "stun", 0, .6, 2, 15, "cold", "Deals 43 ice damage with 7 additional stack damage that declines by 3 per turn. Has a 60% precent chance to stun the enemy for 2 turns. It has a 6 turn cooldown and takes 15 mana to use.",
-    "fireball", false, "fire", 34, 10, 3, 3, null, 0, 0, 0, 9, "fire", "Deals 34 ice damage with 10 stack damage that declines by 3 per turn. Has a 3 turn cooldown and costs 9 mana to use.",
+    "fireball", false, "fire", 50, 10, 3, 3, null, 0, 0, 0, 9, "fire", "Deals 50 fire damage with 10 stack damage that declines by 3 per turn. Has a 3 turn cooldown and costs 9 mana to use.",
     "sunlight fury", false, "fire", 29, 20, 4, 4, "flame", .14, .34, 0, 18, "fire", "Deals 29 fire damage and inflicts 20 stack damage that declines by 4 per turn. The spell has a 34% chance to deal 14% more damage. It has a 4 turn cooldown and needs 18 mana.",
-    "boil", false, "water", 23, 12, 3, 3, null, 0, 0, 0, 7, "fire", "You launch boiling water at your opponent, dealing 23 water damage and 12 stack damage that declines by 3 per turn. Has a 3 turn cooldown and uses 7 mana.",
+    "boil", false, "water", 35, 12, 3, 3, null, 0, 0, 0, 7, "fire", "You launch boiling water at your opponent, dealing 35 water damage and 12 stack damage that declines by 3 per turn. Has a 3 turn cooldown and uses 7 mana.",
     "bolt", false, "electric", 31, 6, 1, 2, null, 0, 0, 0, 7, "electric", "Deals 31 electric damage with 6 stack damage that declines by 1 per turn. Has a cooldown of 2 turns and needs 7 mana",
     "tidal wave", false, "water", 45, 2, 1, 3, "freeze", .25, .15, 0, 20, "water", "You unleash a wave of water onto your opponentm dealing 45 water damage and 2 stack damage that declines by 1 per turn. Has a 15% chance to deal 25% more damage and has a 3 turn cooldown, needing 20 mana.",
     "splash", false, "water", 10, 4, 0, 1, "stun", 0, .10, 1, 7, "water", "", "You splash water onto your opponent, dealing 10 water damage and 4 physical damage that doesn't decline until another spell is used. Has a %10 chance to stun the enemy for 1 turn. It takes 7 mana to use and has a 3 turn cooldown.",
@@ -82,9 +90,12 @@ const spells = [
     "thunder beam", false, "electric", 30, 2, 1, 1, "shock", .14, .4, 0, 11, "electric", "Deals 30 electric damage and 2 stack damage that declines by 1 per turn. Has a 40% chance to do 14% more damage and takes 3 mana to use.",
     "electric sprint", true, "electric", 0, 15, 4, 3, null, 0, 0, 0, 4, null, "The user charges themselves with pure electricity and takes 15 less damage per hit. The damage resist fades by 4 per turn. It has a 3 turn cooldown and takes 4 mana to use.",
     "refresh", true, "electric", 0, 0, 0, 5, "refresh", 0, 1, 0, 20, null, "Resets the cooldowns of all of your weapons and spells. Has a 5 turn cooldown and costs 20 mana.",
-    "sonic shout", false, "air", 23, 15, 4, 5, "stun", 0, .4, 1, 14, "wind", "Deals 23 air damage and 15 stack damage with a decline of 4 per turn. Has a 40% chance to stun the enemy for 1 turn. It has a 5 turn cooldown and costs 14 mana to use.",
+    "sonic shout", false, "air", 32, 15, 4, 5, "stun", 0, .6, 1, 14, "wind", "Deals 32 air damage and 15 stack damage with a decline of 4 per turn. Has a 60% chance to stun the enemy for 1 turn. It has a 5 turn cooldown and costs 14 mana to use.",
     "blind", false, "air", 0, 0, 0, 4, "blind", .33, 1, 0, 13, null, "Makes the enemy 33% more likely to miss their attacks. Has a 4 turn cooldown and takes 13 mana to use.",
-    "spark", false, "electric", 25, 15, 7, 0, "shock", .12, .6, 0, 7, "electric", "Deals 25 electric damage and 15 stack damage that declines by 7 per turn. Has a 60% chance to deal 12% extra damage and takes 7 mana to use.",
+    "spark", false, "electric", 20, 15, 7, 0, "shock", .12, .6, 0, 5, "electric", "Deals 25 electric damage and 15 stack damage that declines by 7 per turn. Has a 60% chance to deal 12% extra damage and takes 5 mana to use.",
+    "shadow rain", false, "water", 10, 30, 5, 4, null, 0, 0, 0, 18, "water", "Releases a shadown storm that rains down on the opponent. Deals 10 water damage and 30 stack damage that declines by 5 per turn. Has a cooldown of 4 turns and requires 18 mana.",
+    "needle storm", false, "bleed", 23, 30, 3, 4, "stun", 0, .32, 1, 24, "sharp", "A gust of wind that carries sharp needles towards the enemy. Does 23 bleed damage with 30 stack damage. The stack damage declines by 3 per turn. The spell has a 4 turn cooldown and uses 24 mana. Bleed stack damage can stack every turn.",
+    "light beam", false, "light", 0, 0, 0, 5, "stun", 0, 1, 3, 23, "light", "You project a beam of light that stuns the enemy for 3 turns. Uses 23 mana and has a 5 turn cooldown.",
 ];
 
 //statBuffs: [item that provides it], [stat it increases], [by how much extra per level], [tooltip]
@@ -95,6 +106,8 @@ const statBuffs = [
     "necklace of luck", "bonusdamage", .05, "Gain 5% bonus damage per level up.",
     "manaflow band", "manaregen", 1, "Gain 1 extra mana regen per level up.",
     "silk band", "maxhealth", 5, "Gain 5 extra max health per level up.",
+    "dwarf shoes", "speed", 2, "Gain 2 extra speed per level up.",
+    "baby dragon claw", "bonusdamage", .15, "Gain 15% bonus damage per level up.",
 ]
 
 //consumables: [name], [hp heal], [max hp increase], [strength increase], [incoming damage decrease], [regen increase], [intellect increase], [mana recover], [max mana increase], [speed increase], [tooltip]
@@ -105,18 +118,27 @@ const consumables = [
 //enemies
 
 //TIER 1 TURNS 0 - 60
-var encounters1 = ["goblin", "orc", "reptilian"];
+var encounters1 = ["goblin", "orc", "dwarf"];
 
 var goblin = { name: "goblin", health: 100, damage: 10, damageResist: 0, missChance: .22, speed: 24, messageType: "enemyranged", xp: 150, drop1Chance: .60, drop1: "potion", drop2Chance: .19, drop2: "bow", };
-var orc = { name: "orc", health: 150, damage: 20, damageResist: 0, missChance: .31, speed: 14, messageType: "enemydull", xp: 300, drop1Chance: .4, drop1: "strength band", };
-var reptilian = { name: "reptilian", health: 200, damage: 15, damageResist: 10, missChance: .14, speed: 20, messageType: "enemysharp", xp: 450, drop1Chance: .15, drop1: "sonic shout", };
+var orc = { name: "orc", health: 150, damage: 20, damageResist: 0, missChance: .31, speed: 14, messageType: "enemydull", xp: 300, drop1Chance: .40, drop1: "strength band", };
+var dwarf = { name: "dwarf", health: 100, damage: 25, damageResist: 2, missChance: .10, speed: 10, messageType: "enemydull", xp: 175, drop1Chance: .60, drop1: "dwarf shoes", }
 
 //TIER 2 TURNS 60 - 120
-var encounters2 = ["ghoul", "spider", "watermage"];
+var encounters2 = ["ghoul", "spider", "watermage", "reptilian"];
 
 var ghoul = { name: "ghoul", health: 60, damage: 25, damageResist: 3, missChance: .22, speed: 15, messageType: "monster", xp: 250, }
 var spider = { name: "spider", health: 150, damage: 20, damageResist: 2, missChance: .05, speed: 50, messageType: "monster", xp: 500, drop1Chance: .60, drop1: "silk band" };
-var watermage = { name: "water mage", health: 75, damage: 30, damageResist: 4, missChance: .11, speed: 40, messageType: "enemysharp", xp: 450, drop1Chance: .30, drop1: "boil", drop2Chance: .40, drop2: "spell book", }
+var watermage = { name: "water mage", health: 75, damage: 30, damageResist: 4, missChance: .11, speed: 40, messageType: "enemywater", xp: 450, drop1Chance: .30, drop1: "boil", drop2Chance: .40, drop2: "spell book", }
+var reptilian = { name: "reptilian", health: 200, damage: 15, damageResist: 5, missChance: .14, speed: 20, messageType: "enemysharp", xp: 450, drop1Chance: .50, drop1: "sonic shout", };
+
+//TIER 3 TURNS 120 - 180
+var encounters3 = ["firemage", "babydragon", "raidcaptain"]
+
+var firemage = { name: "fire mage", health: 250, damage: 35, damageResist: 1, missChance: .07, speed: 70, messageType: "enemyfire", xp: 700, drop1Chance: .60, drop1: "fireball", };
+var babydragon = { name: "baby dragon", health: 350, damage: 40, damageResist: 10, missChance: .23, speed: 50, messageType: "monster", xp: 1000, drop1Chance: .97, drop1: "baby dragon claw", };
+var raidcaptain = { name: "raid captain", health: 300, damage: 30, damageResist: 4, missChance: .16, speed: 55, messageType: "enemysharp", xp: 800, };
+
 //
 
 //bosses
@@ -172,8 +194,6 @@ function start() {
 
 function levelUp() {
     player.level = player.level + 1;
-    update("You have reached level " + player.level + ".", 3);
-
     //base stat modifiers
     player.health = player.health + 5;
     player.maxhealth = player.maxhealth + 5;
@@ -189,13 +209,15 @@ function levelUp() {
     //extra stat modifiers
     var i = 1;
     while (i <= 6) {
-        if (window["item" + i].name != null && statBuffs.indexOf(window["item" + i].name) != undefined) { var itemID = statBuffs.indexOf(window["item" + i].name) }
-        else { return; };
-        var stat = statBuffs[itemID + 1];
-        var extraIncrease = statBuffs[itemID + 2];
-        player[stat] = player[stat] + extraIncrease;
+        if (window["item" + i].name != null && statBuffs.indexOf(window["item" + i].name) != undefined) {
+            var itemID = statBuffs.indexOf(window["item" + i].name)
+            var stat = statBuffs[itemID + 1];
+            var extraIncrease = statBuffs[itemID + 2];
+            player[stat] = player[stat] + extraIncrease;
+        }
         i = i + 1;
     }
+    update("You have reached level " + player.level + ".", 3);
 }
 
 function gainXP(xp) {
@@ -238,16 +260,18 @@ function cont() {
         duplicateInv();
         update("clear", 1);
         update("You encounter a " + enemy.name + ".", 1);
-        if (weaponCheck() == false) {
-            update("clear", 3);
-            update("You have no way to fight the " + enemy.name + ".", 3);
-            die();
-        }
+        document.getElementById("fightOptions").style.display = "block";
         document.getElementById("main-buttons").style.display = "none";
+        reduceCooldowns();
     }
 }
 
 function item(itemSlot) {
+    if (replacingItem == true) {
+        pickUp(itemSlot);
+        replacingItem = false;
+        return;
+    }
     if (player.fighting == true && weapons.indexOf(window[itemSlot].name) >= 0) {
         weaponAttack(window[itemSlot], window[itemSlot].name);
     }
@@ -283,6 +307,10 @@ function spell(spellObject, spellName) {
     var effectLength = spells[spellID + 10];
     var manaCost = spells[spellID + 11];
 
+    if (purpose == true) {
+        passiveSpell(spellObject, spellName);
+        return;
+    }
     if (manaCost > player.mana) {
         //not enough mana
         update("clear", 1);
@@ -297,17 +325,13 @@ function spell(spellObject, spellName) {
         update("The " + spellName + " spell is still on cooldown.", 1);
         return;
     }
-    if (purpose == true) {
-        passiveSpell(spellObject, spellName);
-        return;
-    }
 
     damage[type] = damage[type] + baseDamage;
-    if (stackDamage[type] == 0) {
+    if (stackDamage[type] == 0 || damage[type] == "bleed") {
         stackDamage[type] = stackDamage[type] + stackingDamage;
         stackDamage[type] = Math.round(stackDamage[type] * ((player.intellect / 100) + 1));
     }
-    if (stackDamageDecline[type] == 0) {
+    if (stackDamageDecline[type] == 0 || damage[type] == "bleed") {
         stackDamageDecline[type] = stackDamageDecline[type] + damageDecline;
     }
     damage[type] = Math.round(damage[type] * ((player.intellect / 100) + 1));
@@ -382,8 +406,11 @@ function passiveSpell(spellObject, spellName) {
         if (player.tempResist < 0) { player.tempResist = 0 };
     }
     else {
+        dmgResist = dmgResist * (player.intellect + 1);
         player.tempResist = player.tempResist + dmgResist;
     }
+
+    reduceCooldowns();
 
     if (Math.random() <= effectChance) {
         if (effect == "refresh") {
@@ -392,6 +419,7 @@ function passiveSpell(spellObject, spellName) {
                 var item = window["item" + i];
                 item.cooldown = 0;
                 i = i + 1;
+                console.log(item);
             }
         }
         if (effect == "heal") {
@@ -399,9 +427,10 @@ function passiveSpell(spellObject, spellName) {
         }
     }
 
-    reduceCooldowns();
     spellObject.cooldown = cooldown;
+    console.log(spellObject);
     player.mana = player.mana - manaCost
+    update();
 }
 
 function weaponAttack(weaponObject, weaponName) {
@@ -424,14 +453,20 @@ function weaponAttack(weaponObject, weaponName) {
     //count damage
     damage[type] = damage[type] + baseDamage;
     damage[type] = Math.round(damage[type] * ((player.strength / 100) + 1));
-    if (stackType != null && stackDamage != 0 && stackDamage[stackType] == 0) {
+    if (stackType == "bleed" && stackDamage != 0) {
         stackDamage[stackType] = stackDamage[stackType] + stackingDamage;
         stackDamage[type] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
-    };
-    if (stackType != null && stackDamageDecline[type] == 0) {
+    }
+    else if (stackType != null && stackDamage != 0 && stackDamage[stackType] == 0) {
+        stackDamage[stackType] = stackDamage[stackType] + stackingDamage;
+        stackDamage[type] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
+    }
+    if (stackType == "bleed") {
         stackDamageDecline[stackType] = stackDamageDecline[stackType] + damageDecline;
     }
-
+    else if (stackType != null && stackDamageDecline[type] == 0) {
+        stackDamageDecline[stackType] = stackDamageDecline[stackType] + damageDecline;
+    }
     reduceCooldowns();
     turns = turns + 1;
     weaponObject.cooldown = cooldown;
@@ -459,6 +494,7 @@ function damageApply(attackPriority, weaponName, messageType, weaponObject) {
 
     total = Math.round(total);
     total = total - enemy.damageResist;
+    if (total < 0) { total = 0 };
     enemy.health = enemy.health - total;
 
     //messages
@@ -484,7 +520,12 @@ function damageApply(attackPriority, weaponName, messageType, weaponObject) {
         gainXP(enemy.xp);
         resetInvDup();
         document.getElementById("loot-screen").style.display = "block";
+        document.getElementById("fightOptions").style.display = "none";
         enemy.dead = true;
+
+        Object.keys(stackDamage).forEach(function (key, index) {
+            if (stackDamage[key] < 0) { stackDamage[key] = 0 };
+        });
     }
 }
 
@@ -518,18 +559,6 @@ function enemyAttack(attackPriority) {
                     update("The " + enemy.name + " missed their attack.", 2);
                 }
             }
-
-            /*if (weaponCheck == false) {
-                if (attackPriority == false) {
-                    update("clear", 1);
-                    update("You have no usable weapons.", 1);
-                }
-                else {
-                    update("clear", 2);
-                    update("You have no usable weapons.", 2);
-                }
-                reduceCooldowns();
-            }*/
         }
         else {
             if (player.speed >= enemy.speed) {
@@ -543,6 +572,9 @@ function enemyAttack(attackPriority) {
                 enemy.stun = enemy.stun - 1;
             }
         }
+        if (player.health <= 0) {
+            die();
+        }
     }
     else {
         if (player.speed >= enemy.speed) {
@@ -552,16 +584,20 @@ function enemyAttack(attackPriority) {
             update("clear", 1);
         }
     }
+}
 
-    if (weaponCheck() == false) {
-        update("clear", 3);
-        update("You have no way to fight the " + enemy.name + ".", 3);
-        die();
+function passTurn() {
+    if (player.speed >= enemy.speed) {
+        update("clear", 1);
+        update("You passed a turn.", 1);
     }
-
-    if (player.health <= 0) {
-        die();
+    else {
+        update("clear", 2);
+        update("You passed a turn.", 2);
     }
+    player.mana = player.mana + player.manaregen;
+    if (player.mana > player.maxmana) { player.mana = player.maxmana }
+    enemyAttack();
 }
 
 function consume(consumableObject, consName) {
@@ -626,25 +662,51 @@ function loot() {
 function pickUp(choice) {
     if (choice == true) {
         var i = 1;
-        while (window["item" + i].name != undefined) {
+        while (window["item" + i] != undefined && window["item" + i].name != undefined && i <= 6) {
             i = i + 1;
         }
-        if (i != 7) {
+        if (i <= 6) {
             window["item" + i].name = drop;
             update("clear", 1);
             update("You pick up the " + drop + ".", 1);
-            printInv();
             document.getElementById("pickUpQuery").style.display = "none";
             document.getElementById("main-buttons").style.display = "block";
+            drop = undefined;
         }
-        else {
-            update("Your inventory is full.")
+        else if (i > 6) {
+            update("clear", 1)
+            update("Your inventory is full, select an item to replace.", 1);
+            document.getElementById("pickUpQuery").style.display = "none";
+            document.getElementById("cancelReplace").style.display = "block";
+            replacingItem = true;
         }
+    }
+    else if (choice == false) {
+        update("clear", 1);
+        update("You leave behind the " + drop + ".", 1);
+        document.getElementById("pickUpQuery").style.display = "none";
+        document.getElementById("main-buttons").style.display = "block";
+        drop = undefined;
     }
     else {
-        update("clear", 1)
-        update("You leave behind the " + drop + ".", 1)
+        var item = window[choice];
+        update("clear", 1);
+        update("You replace your " + item.name + " with the " + drop + ".", 1);
+        document.getElementById("main-buttons").style.display = "block";
+        document.getElementById("cancelReplace").style.display = "none";
+        window[choice] = {};
+        window[choice].name = drop;
+        drop = undefined;
     }
+    printInv();
+}
+
+function cancelReplace() {
+    replacingItem = false;
+    update("clear", 1);
+    update("You decide to leave it behind.", 1);
+    document.getElementById("main-buttons").style.display = "block";
+    document.getElementById("cancelReplace").style.display = "none";
     drop = undefined;
 }
 
@@ -689,7 +751,19 @@ function update(string, line) {
     printInv();
     fillBars();
     updateNames();
+
+    var displayedStats = ["health", "mana", "intellect", "strength", "speed", "maxhealth", "maxmana", "dmgresist", "regen", "manaregen"];
+    var displayedNames = ["Health", "Mana", "Intellect", "Strength", "Speed", "Max HP", "Max MP", "DMG Resist", "HP Regen", "MP Regen"]
+    var i = 0;
+    while (i < displayedStats.length) {
+        var stat = displayedStats[i];
+        var value = player[stat];
+        document.getElementById(stat + "stat").innerHTML = displayedNames[i] + ": " + value;
+        i = i + 1;
+    }
+
     document.getElementById("turns").innerHTML = "Turns: " + turns;
+    document.getElementById("tooltip").innerHTML = "";
 
     if (string == null || string == "") {
         return;
@@ -842,6 +916,9 @@ function showToolTip(id) {
     else if (statBuffs.indexOf(item.name) >= 0) {
         var tooltip = statBuffs[statBuffs.indexOf(item.name) + 3];
     }
+    else {
+        var tooltip = "Empty Slot";
+    }
     document.getElementById("tooltip").innerHTML = tooltip;
 }
 
@@ -858,6 +935,17 @@ function die() {
     document.getElementById("inventory").innerHTML = "";
 }
 
+function testDummy() {
+    player.fighting = true;
+    enemy = { name: "dummy", health: 99999, damage: 0, damageResist: 0, missChance: 1, speed: 0, messageType: "enemydull", xp: 0, }
+    duplicateInv();
+    update("clear", 1);
+    update("You have summoned a dummy.", 1);
+    document.getElementById("fightOptions").style.display = "block";
+    document.getElementById("main-buttons").style.display = "none";
+    reduceCooldowns();
+}
+
 //Verb Types: electric, fire, water, wind, rangedphysical, sharp, dull, cold
 var electricWords = ["shock", "strike", "fry", "electrocute", "jolt"];
 var fireWords = ["burn", "cook", "sizzle", "scorch", "light up", "torture"];
@@ -867,9 +955,12 @@ var rangedphysicalWords = ["shoot", "impale", "penetrate", "destroy", "olbiterat
 var sharpWords = ["slit", "stab", "impale", "cut", "repeatedly stab", "chop up", "slash"];
 var dullWords = ["hit", "crush", "obliterate", "destroy", "break",];
 var coldWords = ["freeze", "frost", "strike", "hit", "cut", "crush",];
+var lightWords = ["blind", "stun",]
 //specific to enemies
 var enemysharpWords = ["slits", "stabs", "impales", "cuts", "repeatedly stabs", "slashes"];
 var enemydullWords = ["hits", "crushes", "obliterates", "destroys", "breaks", "smashes"];
+var enemywaterWords = ["splashes", "drowns", "hits", "soaks",];
+var enemyfireWords = ["burns", "cooks", "sizzles", "scorches", "lights up", "tortures"]
 var enemyrangedWords = ["shoots", "impales", "penetrates", "destroys", "obliterates"];
 var monsterWords = ["bites", "slashes", "scratches", "cuts", "rams", "chomps", "crunches"];
 //specific to certain bosses

@@ -10,7 +10,7 @@
   <div id="title-screen">
     <center>
       <img id="logo" src="logo.jpg">
-      <h1 id="title">Dragon Slayer</h1>
+      <h1 id="title">Dragon Age</h1>
       <button id="start" onclick="pickStarter();">Start</button>
     </center>
   </div>
@@ -32,15 +32,15 @@
         <img src="weapons/sword.png">
         <h1>Sword</h1>
         <p>Classic, sharp sword that does 30 physical damage per hit with no additional stack damage. It does not
-          require any mana to use.</p>
+          require any mana to use. Scales with strength.</p>
       </center>
     </div>
     <div id="select-spell" class="starter" onclick="starter('spark');">
       <center>
         <img src="spells/spark.png">
         <h1>Spark Spell</h1>
-        <p>Scroll of a simple spell that does 25 electric damage and does 15 additional stack damage with a decline of 7
-          per turn. The spell has a chance to deal extra damage and costs 7 mana to use.</p>
+        <p>Scroll of a simple spell that does 20 electric damage and does 15 additional stack damage with a decline of 7
+          per turn. The spell has a chance to deal extra damage and costs 5 mana to use. Scales with intellect.</p>
       </center>
     </div>
     <div id="select-ring" class="starter" onclick="starter('magic ring');">
@@ -48,7 +48,7 @@
         <img src="weapons/magic ring.png">
         <h1>Magic Ring</h1>
         <p>Ancient magic ring that deals 10 damage per hit with 5 extra stack damage that has a decline of 3 per turn.
-          The magic ring provides 5 extra max mana per level up.</p>
+          The magic ring provides 5 extra max mana per level up. Scales with strength.</p>
       </center>
     </div>
   </div>
@@ -61,6 +61,12 @@
     <button id="yesPickUp" onclick="pickUp(true);">Yes</button>
     <button id="noPickUp" onclick="pickUp(false);">No</button>
   </div>
+
+  <div id="fightOptions" class="game">
+    <button id="passTurn" onclick="passTurn()">Pass</button>
+  </div>
+
+  <button id="cancelReplace" class="game" onclick="cancelReplace();">Cancel</button>
 
   <div id="tooltip-display">
     <center>
@@ -91,7 +97,22 @@
         <div id="manaFill"></div>
       </div>
     </div>
-    <div id="stats" class="bot-bar"></div>
+    <div id="stats" class="bot-bar">
+      <div id="statrow1">
+        <p id="healthstat" class="stat">Health: </p>
+        <p id="manastat" class="stat">Mana: </p>
+        <p id="intellectstat" class="stat">Intellect: </p>
+        <p id="strengthstat" class="stat">Strength: </p>
+        <p id="speedstat" class="stat">Speed: </p>
+      </div>
+      <div id="statrow2">
+        <p id="maxhealthstat" class="stat">Max HP: </p>
+        <p id="maxmanastat" class="stat">Max MP: </p>
+        <p id="dmgresiststat" class="stat">DMG Resist: </p>
+        <p id="regenstat" class="stat">HP Regen: </p>
+        <p id="manaregenstat" class="stat">MP Regen: </p>
+      </div>
+    </div>
   </div>
 
   <script src="program.js"></script>

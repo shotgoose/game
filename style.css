@@ -120,3 +120,17 @@ button:focus {
     position: absolute;
     bottom: 100px;
 }
+
+#statrow1 {
+    display: flex;
+    margin-left: 5px;
+}
+
+#statrow2 {
+    display: flex;
+    margin-left: 5px;
+}
+
+.stat {
+    flex: 1;
+}
