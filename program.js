@@ -52,7 +52,7 @@ const weapons = [
     "ancient sword", "physical", 60, null, 0, 0, 1, "sharp", "Deals 60 physical damage. Has a 1 turn cooldown.",
     "bat", "physical", 22, null, 0, 0, 0, "dull", "Deals 22 physical damage.",
     "club", "physical", 27, null, 0, 0, 0, "dull", "Deals 27 physical damage.",
-    "dagger", "physical", 30, "bleed", 10, 1, 1, "sharp", "Deals 30 physical damage with an additional 10 bleed stack damage that has a decline of 1 per turn. Bleed stack damage stacks every turn.",
+    "dagger", "physical", 5, "bleed", 10, 1, 0, "sharp", "Deals 5 physical damage with an additional 10 bleed stack damage that has a decline of 1 per turn. Bleed stack damage stacks every turn.",
     "flail", "physical", 37, null, 0, 0, 0, "dull", "Deals 37 physical damage.",
     "hell axe", "physical", 34, "fire", 19, 2, 1, "sharp", "Deals 34 physical damage with an additional 19 stack damage that has a decline of 2 per turn. Has a 1 turn cooldown.",
     "bow", "physical", 40, null, 0, 0, 2, "rangedphysical", "Deals 40 ranged physical damage with a 2 turn cooldown.",
@@ -94,65 +94,81 @@ const spells = [
     "blind", false, "air", 0, 0, 0, 4, "blind", .33, 1, 0, 13, null, "Makes the enemy 33% more likely to miss their attacks. Has a 4 turn cooldown and takes 13 mana to use.",
     "spark", false, "electric", 20, 15, 7, 0, "shock", .12, .6, 0, 5, "electric", "Deals 25 electric damage and 15 stack damage that declines by 7 per turn. Has a 60% chance to deal 12% extra damage and takes 5 mana to use.",
     "shadow rain", false, "water", 10, 30, 5, 4, null, 0, 0, 0, 18, "water", "Releases a shadown storm that rains down on the opponent. Deals 10 water damage and 30 stack damage that declines by 5 per turn. Has a cooldown of 4 turns and requires 18 mana.",
-    "needle storm", false, "bleed", 23, 30, 3, 4, "stun", 0, .32, 1, 24, "sharp", "A gust of wind that carries sharp needles towards the enemy. Does 23 bleed damage with 30 stack damage. The stack damage declines by 3 per turn. The spell has a 4 turn cooldown and uses 24 mana. Bleed stack damage can stack every turn.",
+    "needle storm", false, "bleed", 23, 30, 3, 2, "stun", 0, .32, 1, 24, "sharp", "A gust of wind that carries sharp needles towards the enemy. Does 23 bleed damage with 30 stack damage. The stack damage declines by 3 per turn. The spell has a 2 turn cooldown and uses 24 mana. Bleed stack damage can stack every turn.",
     "light beam", false, "light", 0, 0, 0, 5, "stun", 0, 1, 3, 23, "light", "You project a beam of light that stuns the enemy for 3 turns. Uses 23 mana and has a 5 turn cooldown.",
+    "basic scroll", false, "light", 20, 10, 5, 0, "manastacks", .5, 2, 0, 7, "light", "You cast a basic light spell that deals 15 light damage and 10 stack damage that declines by 5 per turn. Has a 50% chance to increase your max mana by 2 per hit. Uses 7 mana.",
+    "duplicate", false, "light", 0, 0, 0, 7, "stun", 0, 1, 5, 18, "light", "Obtainable by tricksters only. Duplicate yourself with magic to confuse and stun the enemy for 5 turns. Has a 7 turn cooldown and uses 18 mana.",
 ];
 
-//statBuffs: [item that provides it], [stat it increases], [by how much extra per level], [tooltip]
+//statBuffs: [item that provides it], [stat it increases], [by how much extra per level], [tooltip], "class specific? if so, which class"
 const statBuffs = [
-    "magic ring", "maxmana", 5, "Gain 5 extra max mana per level up",
-    "strength band", "strength", 2, "Gain 2 extra strength per level up.",
-    "spell book", "intellect", 4, "Gain 4 extra intellect per level up.",
-    "necklace of luck", "bonusdamage", .05, "Gain 5% bonus damage per level up.",
-    "manaflow band", "manaregen", 1, "Gain 1 extra mana regen per level up.",
-    "silk band", "maxhealth", 5, "Gain 5 extra max health per level up.",
-    "dwarf shoes", "speed", 2, "Gain 2 extra speed per level up.",
-    "baby dragon claw", "bonusdamage", .15, "Gain 15% bonus damage per level up.",
+    "magic ring", "maxmana", 5, "Gain 5 extra max mana per level up", false,
+    "strength band", "strength", 2, "Gain 2 extra strength per level up.", false,
+    "spell book", "intellect", 4, "Gain 4 extra intellect per level up.", false,
+    "necklace of luck", "bonusdamage", .12, "Gain 12% bonus damage per level up. Applies only for tricksters.", "trickster",
+    "manaflow band", "manaregen", 3, "Gain 3 extra mana regen per level up.", false,
+    "silk band", "maxhealth", 5, "Gain 5 extra max health per level up.", false,
+    "dwarf shoes", "speed", 2, "Gain 2 extra speed per level up.", false,
+    "baby dragon claw", "bonusdamage", .15, "Gain 15% bonus damage per level up.", false,
+    "assassin cloak", "takedown", .02, "Gain 2% extra takedown chance per level up. Applies only for assassins.", "assassin",
+    "blade sharpener", "bonusdamage", .01, "Gain 1% bonus damage per level up. Applies only for brawlers.", "brawler",
+    "amulet of the senses", "bonusdamage", .30, "Gain 30% bonus damage per level up. Applies only for tricksters", ""
 ]
 
 //consumables: [name], [hp heal], [max hp increase], [strength increase], [incoming damage decrease], [regen increase], [intellect increase], [mana recover], [max mana increase], [speed increase], [tooltip]
 const consumables = [
-    "potion", 50, 0, 0, 0, 0, 0, 0, 0, 0, "Recovers 50 HP."
+    "potion", 50, 0, 0, 0, 0, 0, 0, 0, 0, "Recovers 50 HP.",
+    "dragon blood", 15, 50, 10, 2, 4, 4, 0, 9, "Recovers 15 HP, adds 50 max HP, increases strength by 10, increases damage reist by 2, increases regen by 4, increases intellect by 4, and increases speed by 9.",
 ];
+
+//class switches: [item], [what class it switches to], [tooltip]
+const classSwitches = [
+    "deck of cards", "trickster", "Switches your class to the trickster class.",
+]
+
 
 //enemies
 
 //TIER 1 TURNS 0 - 60
-var encounters1 = ["goblin", "orc", "dwarf"];
+var encounters1 = ["goblin", "orc", "dwarf", "magician"];
 
-var goblin = { name: "goblin", health: 100, damage: 10, damageResist: 0, missChance: .22, speed: 24, messageType: "enemyranged", xp: 150, drop1Chance: .60, drop1: "potion", drop2Chance: .19, drop2: "bow", };
-var orc = { name: "orc", health: 150, damage: 20, damageResist: 0, missChance: .31, speed: 14, messageType: "enemydull", xp: 300, drop1Chance: .40, drop1: "strength band", };
-var dwarf = { name: "dwarf", health: 100, damage: 25, damageResist: 2, missChance: .10, speed: 10, messageType: "enemydull", xp: 175, drop1Chance: .60, drop1: "dwarf shoes", }
+var goblin = { name: "goblin", health: 100, damage: 10, damageResist: 0, missChance: .22, speed: 24, messageType: "enemyranged", xp: 150, drop1Chance: .60, drop1: "potion", drop2Chance: .19, drop2: "bow", weakTo: "light" };
+var orc = { name: "orc", health: 150, damage: 20, damageResist: 0, missChance: .31, speed: 14, messageType: "enemydull", xp: 300, drop1Chance: .40, drop1: "strength band", weakTo: "bleed", };
+var dwarf = { name: "dwarf", health: 100, damage: 25, damageResist: 2, missChance: .10, speed: 10, messageType: "enemydull", xp: 175, drop1Chance: .60, drop1: "dwarf shoes", weakTo: null, }
+var magician = { name: "magician", health: 75, damage: 21, damageResist: 1, missChance: .05, speed: 40, messageType: "enemyfire", xp: 250, drop1Chance: .7, drop1: "deck of cards" }
 
 //TIER 2 TURNS 60 - 120
 var encounters2 = ["ghoul", "spider", "watermage", "reptilian"];
 
-var ghoul = { name: "ghoul", health: 60, damage: 25, damageResist: 3, missChance: .22, speed: 15, messageType: "monster", xp: 250, }
-var spider = { name: "spider", health: 150, damage: 20, damageResist: 2, missChance: .05, speed: 50, messageType: "monster", xp: 500, drop1Chance: .60, drop1: "silk band" };
-var watermage = { name: "water mage", health: 75, damage: 30, damageResist: 4, missChance: .11, speed: 40, messageType: "enemywater", xp: 450, drop1Chance: .30, drop1: "boil", drop2Chance: .40, drop2: "spell book", }
-var reptilian = { name: "reptilian", health: 200, damage: 15, damageResist: 5, missChance: .14, speed: 20, messageType: "enemysharp", xp: 450, drop1Chance: .50, drop1: "sonic shout", };
+var ghoul = { name: "ghoul", health: 100, damage: 25, damageResist: 3, missChance: .22, speed: 15, messageType: "monster", xp: 250, weakTo: "fire", }
+var spider = { name: "spider", health: 150, damage: 20, damageResist: 2, missChance: .05, speed: 50, messageType: "monster", xp: 500, drop1Chance: .60, drop1: "silk band", weakTo: "light" };
+var watermage = { name: "water mage", health: 75, damage: 30, damageResist: 4, missChance: .11, speed: 40, messageType: "enemywater", xp: 450, drop1Chance: .30, drop1: "boil", drop2Chance: .40, drop2: "spell book", weakTo: "electric" }
+var reptilian = { name: "reptilian", health: 200, damage: 15, damageResist: 5, missChance: .14, speed: 20, messageType: "enemysharp", xp: 450, drop1Chance: .50, drop1: "sonic shout", weakTo: "bleed" };
 
 //TIER 3 TURNS 120 - 180
 var encounters3 = ["firemage", "babydragon", "raidcaptain"]
 
-var firemage = { name: "fire mage", health: 250, damage: 35, damageResist: 1, missChance: .07, speed: 70, messageType: "enemyfire", xp: 700, drop1Chance: .60, drop1: "fireball", };
-var babydragon = { name: "baby dragon", health: 350, damage: 40, damageResist: 10, missChance: .23, speed: 50, messageType: "monster", xp: 1000, drop1Chance: .97, drop1: "baby dragon claw", };
-var raidcaptain = { name: "raid captain", health: 300, damage: 30, damageResist: 4, missChance: .16, speed: 55, messageType: "enemysharp", xp: 800, };
+var firemage = { name: "fire mage", health: 250, damage: 35, damageResist: 1, missChance: .07, speed: 70, messageType: "enemyfire", xp: 700, drop1Chance: .60, drop1: "fireball", weakTo: "water" };
+var babydragon = { name: "baby dragon", health: 350, damage: 40, damageResist: 10, missChance: .23, speed: 50, messageType: "monster", xp: 1000, drop1Chance: .97, drop1: "baby dragon claw", weakTo: "electric" };
+var raidcaptain = { name: "raid captain", health: 300, damage: 30, damageResist: 4, missChance: .16, speed: 55, messageType: "enemysharp", xp: 800, weakTo: "air" };
 
 //
 
 //bosses
-var icedragon = { name: "ice dragon", health: 2000, damage: 100, damageResist: 15, missChance: .05, speed: 100, messageType: "iceDragon", xp: 2000, drop1Chance: 1, drop: "glacial blast" }
+//boss spawned every 100 turns starting at turn 200 in order of array
+var bosses = ["icedragon"];
+var icedragon = { name: "ice dragon", health: 2000, damage: 100, damageResist: 15, missChance: .05, speed: 100, messageType: "iceDragon", xp: 2000, drop1Chance: 1, drop: "glacial blast", weakTo: "fire" }
 
 function pickStarter() {
     document.getElementById("starter-selection").style.display = "flex";
     document.getElementById("title-screen").style.display = "none";
 }
 
-function starter(item) {
+function starter(item, playerclass) {
     item1.name = item;
     item1.cooldown = 0;
-
+    player.class = playerclass;
+    player.technicalClass = playerclass;
     start();
 }
 
@@ -170,6 +186,7 @@ function start() {
     player.manaregen = 3;
     player.bonusdamage = 0; //%
     player.speed = 30;
+    player.takedown = 0; //% chance for instakill on fight start for assassin class
     player.tempResist = 0;
 
     player.level = 1;
@@ -192,32 +209,56 @@ function start() {
     update("You wake up with a " + item1.displayName + " and a potion.", 1);
 }
 
+//scaling per class:
+var brawlerScaling = { maxhealth: 5, maxmana: -3, strength: 3, intellect: 1, dmgresist: 2, regen: 2, manaregen: 2, speed: 3, takedown: 0 };
+var mageScaling = { maxhealth: 3, maxmana: 6, strength: 1, intellect: 4, dmgresist: 0, regen: 1, manaregen: 5, speed: 6, takedown: 0 };
+var assassinScaling = { maxhealth: 1, maxmana: 1, strength: 1, intellect: 1, dmgresist: 1, regen: 1, manaregen: 1, speed: 18, takedown: .07 };
+var tricksterScaling = { maxhealth: 2, maxmana: 2, strength: 0, intellect: 2, dmgresist: 0, regen: 1, manaregen: 3, speed: 7, takedown: 0, }
+
+var brawlerItems = { 4: "blade sharpener" }
+var mageItems = { 6: "manaflow band" };
+var assassinItems = { 3: "assassin cloak" };
+var tricksterItems = { 3: "necklace of luck", 5: "necklace of luck", 8: "manaflow band", 10: "duplicate", 13: "amulet of the senses" };
+
 function levelUp() {
     player.level = player.level + 1;
-    //base stat modifiers
-    player.health = player.health + 5;
-    player.maxhealth = player.maxhealth + 5;
-    player.mana = player.mana + 3;
-    player.maxmana = player.maxmana + 3;
-    player.strength = player.strength + 2;
-    player.intellect = player.intellect + 2;
-    player.dmgresist = player.dmgresist + 1;
-    player.regen = player.regen + 1;
-    player.manaregen = player.manaregen + 1;
-    player.speed = player.speed + 4;
+    update("You have reached level " + player.level + ".", 3);
+    //find class object
+    var classObject = window[player.class + "Scaling"];
+    var itemsObject = window[player.class + "Items"];
+    //class stat modifiers
+    player.health = player.health + classObject.maxhealth;
+    player.maxhealth = player.maxhealth + classObject.maxhealth;
+    player.mana = player.mana + classObject.maxmana;
+    player.maxmana = player.maxmana + classObject.maxmana;
+    player.strength = player.strength + classObject.strength;
+    player.intellect = player.intellect + classObject.intellect;
+    player.dmgresist = player.dmgresist + classObject.dmgresist;
+    player.regen = player.regen + classObject.regen;
+    player.manaregen = player.manaregen + classObject.manaregen;
+    player.speed = player.speed + classObject.speed;
+    player.takedown = player.takedown + classObject.takedown;
 
-    //extra stat modifiers
+    //item stat modifiers
     var i = 1;
     while (i <= 6) {
         if (window["item" + i].name != null && statBuffs.indexOf(window["item" + i].name) != undefined) {
             var itemID = statBuffs.indexOf(window["item" + i].name)
             var stat = statBuffs[itemID + 1];
             var extraIncrease = statBuffs[itemID + 2];
-            player[stat] = player[stat] + extraIncrease;
+            var classSpecific = statBuffs[itemID + 4];
+            if (classSpecific == false || classSpecific == player.class) {
+                player[stat] = player[stat] + extraIncrease;
+            }
         }
         i = i + 1;
     }
-    update("You have reached level " + player.level + ".", 3);
+
+    //give class item for level (if any)
+    if (itemsObject[player.level] != undefined) {
+        forceDrop(itemsObject[player.level]);
+    }
+
 }
 
 function gainXP(xp) {
@@ -250,7 +291,7 @@ function cont() {
 
     var rng = Math.random()
 
-    if (rng <= .15) {
+    if (rng <= .07) {
         //enemy encounter
         player.fighting = true;
         //decide encounter level
@@ -263,6 +304,24 @@ function cont() {
         document.getElementById("fightOptions").style.display = "block";
         document.getElementById("main-buttons").style.display = "none";
         reduceCooldowns();
+        //takedown mechanic
+        if (Math.random() <= player.takedown) {
+            update("You performed a successful takedown on the enemy.", 1);
+
+            update("clear", 3)
+            update("The " + enemy.name + " dies.", 3)
+            player.fighting = false;
+            gainXP(enemy.xp);
+            resetInvDup();
+            document.getElementById("loot-screen").style.display = "block";
+            document.getElementById("fightOptions").style.display = "none";
+            enemy.dead = true;
+
+            Object.keys(stackDamage).forEach(function (key, index) {
+                stackDamage[key] = 0
+            });
+
+        }
     }
 }
 
@@ -286,6 +345,13 @@ function item(itemSlot) {
     else if (player.fighting == false && spells.indexOf(window[itemSlot].name) >= 0) {
         //cant use spells outside of battle
         console.log("spells cannot be used outside of battle")
+    }
+
+    if (player.fighting == false && classSwitches.indexOf(window[itemSlot].name) >= 0) {
+        switchClass(window[itemSlot], window[itemSlot].name);
+    }
+    else if (player.fighting == true && classSwitches.indexOf(window[itemSlot].name) >= 0) {
+        //cant use class switches in battle
     }
 
     if (consumables.indexOf(window[itemSlot].name) >= 0) {
@@ -327,14 +393,15 @@ function spell(spellObject, spellName) {
     }
 
     damage[type] = damage[type] + baseDamage;
-    if (stackDamage[type] == 0 || damage[type] == "bleed") {
+    if (stackDamage[type] == 0 || type == "bleed") {
         stackDamage[type] = stackDamage[type] + stackingDamage;
         stackDamage[type] = Math.round(stackDamage[type] * ((player.intellect / 100) + 1));
+        console.log("applied stack")
     }
-    if (stackDamageDecline[type] == 0 || damage[type] == "bleed") {
+    if (stackDamageDecline[type] == 0) {
         stackDamageDecline[type] = stackDamageDecline[type] + damageDecline;
     }
-    damage[type] = Math.round(damage[type] * ((player.intellect / 100) + 1));
+    damage[type] = Math.round(damage[type] * ((player.intellect / 50) + 1));
 
     reduceCooldowns();
     turns = turns + 1;
@@ -361,14 +428,23 @@ function spell(spellObject, spellName) {
         }
     }
 
+    //is enemy vulnerable to damage type?
+    var vulnerable = false;
+    console.log(enemy.weakTo);
+    if (enemy.weakTo == type && enemy.weakTo != null) {
+        damage[type] = damage[type] * 2;
+        stackDamage[type] = stackDamage[type] * 2;
+        vulnerable = true;
+    }
+
     //turns
     if (player.speed >= enemy.speed) {
-        damageApply(true, spellName, spells[spellID + 12], spellObject);
+        damageApply(true, spellName, spells[spellID + 12], spellObject, vulnerable);
         enemyAttack(false);
     }
     else {
         enemyAttack(true);
-        damageApply(false, spellName, spells[spellID + 12], spellObject);
+        damageApply(false, spellName, spells[spellID + 12], spellObject, vulnerable);
     }
     damage[type] = 0;
 
@@ -406,7 +482,7 @@ function passiveSpell(spellObject, spellName) {
         if (player.tempResist < 0) { player.tempResist = 0 };
     }
     else {
-        dmgResist = dmgResist * (player.intellect + 1);
+        dmgResist = dmgResist * (player.intellect + (player.intellect * 2));
         player.tempResist = player.tempResist + dmgResist;
     }
 
@@ -452,17 +528,14 @@ function weaponAttack(weaponObject, weaponName) {
 
     //count damage
     damage[type] = damage[type] + baseDamage;
-    damage[type] = Math.round(damage[type] * ((player.strength / 100) + 1));
+    damage[type] = Math.round(damage[type] * ((player.strength / 50) + 1));
     if (stackType == "bleed" && stackDamage != 0) {
         stackDamage[stackType] = stackDamage[stackType] + stackingDamage;
-        stackDamage[type] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
+        stackDamage[stackType] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
     }
-    else if (stackType != null && stackDamage != 0 && stackDamage[stackType] == 0) {
+    else if (stackType != null && stackType != "bleed" && stackDamage != 0 && stackDamage[stackType] == 0) {
         stackDamage[stackType] = stackDamage[stackType] + stackingDamage;
-        stackDamage[type] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
-    }
-    if (stackType == "bleed") {
-        stackDamageDecline[stackType] = stackDamageDecline[stackType] + damageDecline;
+        stackDamage[stackType] = Math.round(stackDamage[stackType] * ((player.strength / 100) + 1));
     }
     else if (stackType != null && stackDamageDecline[type] == 0) {
         stackDamageDecline[stackType] = stackDamageDecline[stackType] + damageDecline;
@@ -471,26 +544,38 @@ function weaponAttack(weaponObject, weaponName) {
     turns = turns + 1;
     weaponObject.cooldown = cooldown;
 
+    //is enemy vulnerable to damage type?
+    var vulnerable = false;
+    console.log(enemy.weakTo);
+    if (enemy.weakTo == type && enemy.weakTo != null) {
+        damage[type] = damage[type] * 2;
+        vulnerable = true;
+    }
+    if (enemy.weakTo == stackType && enemy.weakTo != null) {
+        stackDamage[stackType] = stackDamage[stackType] * 2;
+        vulnerable = true;
+    }
+
     //turns
     if (player.speed >= enemy.speed) {
-        damageApply(true, weaponName, weapons[weaponID + 7], weaponObject);
+        damageApply(true, weaponName, weapons[weaponID + 7], weaponObject, vulnerable);
         enemyAttack(false);
     }
     else {
         enemyAttack(true);
-        damageApply(false, weaponName, weapons[weaponID + 7], weaponObject);
+        damageApply(false, weaponName, weapons[weaponID + 7], weaponObject, vulnerable);
     }
     damage[type] = 0;
 }
 
-function damageApply(attackPriority, weaponName, messageType, weaponObject) {
+function damageApply(attackPriority, weaponName, messageType, weaponObject, vulnerable) {
     const sumValues = obj => Object.values(obj).reduce((a, b) => a + b);
 
     //start damage counting
     var totalDamage = sumValues(damage);
     var totalStack = sumValues(stackDamage);
     var total = totalDamage + totalStack;
-    //var total = total + ((Math.random() * 30) * Math.random()); RNG FACTOR
+    total = total * (1 + player.bonusdamage);
 
     total = Math.round(total);
     total = total - enemy.damageResist;
@@ -501,10 +586,16 @@ function damageApply(attackPriority, weaponName, messageType, weaponObject) {
     if (attackPriority == true) {
         update("clear", 1);
         update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponObject.displayName + ", dealing " + total + " damage.", 1);
+        if (vulnerable == true) {
+            update("The " + enemy.name + " is weak to one or more of your weapon types! They took greatly increased damage.", 1)
+        }
     }
     else {
         update("clear", 2);
         update("You " + findVerb(messageType) + " the " + enemy.name + " with your " + weaponObject.displayName + ", dealing " + total + " damage.", 2);
+        if (vulnerable == true) {
+            update("The " + enemy.name + " is weak to one or more of your weapon types! They took greatly increased damage.", 2)
+        }
     }
 
     //reduce stack damage
@@ -524,7 +615,7 @@ function damageApply(attackPriority, weaponName, messageType, weaponObject) {
         enemy.dead = true;
 
         Object.keys(stackDamage).forEach(function (key, index) {
-            if (stackDamage[key] < 0) { stackDamage[key] = 0 };
+            stackDamage[key] = 0
         });
     }
 }
@@ -632,16 +723,30 @@ function consume(consumableObject, consName) {
     update("clear", 2);
 }
 
+function switchClass(itemObject, itemUsed) {
+    var newClass = classSwitches[classSwitches.indexOf(itemUsed) + 1];
+    var previous = player.technicalClass;
+    update("clear", 1);
+    if (player["technicalClass"].split("-").indexOf(newClass) == -1) {
+        player.technicalClass = player.technicalClass + "-" + newClass;
+    }
+
+    itemObject.used = true;
+
+    update("You have switched your class from the " + previous + " class to the " + player.technicalClass + " class. Your previous stats will be kept but they will now increase according to the " + newClass + " class.", 1);
+    player.class = newClass;
+}
+
 function loot() {
     update("clear", 1);
     update("clear", 2);
     update("clear", 3);
     update("You loot the dead " + enemy.name + ".", 1);
 
-    if (enemy.drop2Chance != null && enemy.drop2Chance >= Math.random()) {
+    if (enemy.drop2Chance != null && enemy.drop2Chance >= Math.random() && drop == undefined) {
         drop = enemy.drop2;
     }
-    else if (enemy.drop1Chance != null && enemy.drop1Chance >= Math.random()) {
+    else if (enemy.drop1Chance != null && enemy.drop1Chance >= Math.random() && drop == undefined) {
         drop = enemy.drop1;
     }
 
@@ -657,6 +762,13 @@ function loot() {
         drop = undefined;
     }
     enemy = {};
+}
+
+function forceDrop(item) {
+    drop = item;
+    update("You will recieve a " + drop + " for your " + player.class + " class.", 3);
+    /*document.getElementById("loot-screen").style.display = "none";
+    document.getElementById("pickUpQuery").style.display = "block";*/
 }
 
 function pickUp(choice) {
@@ -831,7 +943,7 @@ function printInv() {
         else if (spells.indexOf(item.name) >= 0) {
             var folder = "spells";
         }
-        else if (consumables.indexOf(item.name) >= 0) {
+        else if (consumables.indexOf(item.name) >= 0 || classSwitches.indexOf(item.name) >= 0) {
             var folder = "consumables"
         }
         else if (statBuffs.indexOf(item.name) >= 0) {
@@ -916,6 +1028,9 @@ function showToolTip(id) {
     else if (statBuffs.indexOf(item.name) >= 0) {
         var tooltip = statBuffs[statBuffs.indexOf(item.name) + 3];
     }
+    else if (classSwitches.indexOf(item.name) >= 0) {
+        var tooltip = classSwitches[classSwitches.indexOf(item.name) + 2];
+    }
     else {
         var tooltip = "Empty Slot";
     }
@@ -955,7 +1070,7 @@ var rangedphysicalWords = ["shoot", "impale", "penetrate", "destroy", "olbiterat
 var sharpWords = ["slit", "stab", "impale", "cut", "repeatedly stab", "chop up", "slash"];
 var dullWords = ["hit", "crush", "obliterate", "destroy", "break",];
 var coldWords = ["freeze", "frost", "strike", "hit", "cut", "crush",];
-var lightWords = ["blind", "stun",]
+var lightWords = ["blind", "stun",];
 //specific to enemies
 var enemysharpWords = ["slits", "stabs", "impales", "cuts", "repeatedly stabs", "slashes"];
 var enemydullWords = ["hits", "crushes", "obliterates", "destroys", "breaks", "smashes"];

@@ -10,7 +10,7 @@
   <div id="title-screen">
     <center>
       <img id="logo" src="logo.jpg">
-      <h1 id="title">Dragon Age</h1>
+      <h1 id="title">title</h1>
       <button id="start" onclick="pickStarter();">Start</button>
     </center>
   </div>
@@ -27,28 +27,36 @@
   </div>
 
   <div id="starter-selection" class="game">
-    <div id="select-sword" class="starter" onclick="starter('sword');">
+    <div id="select-sword" class="starter" onclick="starter('sword', 'brawler');">
       <center>
         <img src="weapons/sword.png">
         <h1>Sword</h1>
         <p>Classic, sharp sword that does 30 physical damage per hit with no additional stack damage. It does not
-          require any mana to use. Scales with strength.</p>
+          require any mana to use. Scales with strength. Choosing this starter will grant you the brawler class, which
+          is focused on using melee weapons to deal heavy damage to enemies at no cost and being able to absorb damage
+          more easily from enemies.</p>
       </center>
     </div>
-    <div id="select-spell" class="starter" onclick="starter('spark');">
+    <div id="select-spell" class="starter" onclick="starter('basic scroll', 'mage');">
       <center>
-        <img src="spells/spark.png">
-        <h1>Spark Spell</h1>
-        <p>Scroll of a simple spell that does 20 electric damage and does 15 additional stack damage with a decline of 7
-          per turn. The spell has a chance to deal extra damage and costs 5 mana to use. Scales with intellect.</p>
+        <img src="spells/basic scroll.png">
+        <h1>Basic Scroll</h1>
+        <p>Scroll of a simple spell that does 20 light damage. The spell also deals 10 stack damage that declines by 2
+          per turn. When hitting an enemy with this spell, your max mana has a 50% chance to increase by 2. Uses 7 mana.
+          Scales with intellect. Choosing this starter will grant you the mage class, which is focused on using spells
+          to deal more damage than possible with melee weapons, but takes mana and leaves the user with less armor and
+          health.
+        </p>
       </center>
     </div>
-    <div id="select-ring" class="starter" onclick="starter('magic ring');">
+    <div id="select-ring" class="starter" onclick="starter('dagger', 'assassin');">
       <center>
-        <img src="weapons/magic ring.png">
-        <h1>Magic Ring</h1>
-        <p>Ancient magic ring that deals 10 damage per hit with 5 extra stack damage that has a decline of 3 per turn.
-          The magic ring provides 5 extra max mana per level up. Scales with strength.</p>
+        <img src="weapons/dagger.png">
+        <h1>Dagger</h1>
+        <p>Extremely sharp dagger that deals 5 base damage and 10 bleed damage with a decline of 1 per turn. Bleed
+          stack damage can keep stacking without having to reach 0. Scales with strength. Choosing this starter will
+          grant you the assassin class, which is focused on performing takedowns on enemies before they can fight back,
+          but if the takedown fails, surviving the fight will be difficult for an assassin.</p>
       </center>
     </div>
   </div>
